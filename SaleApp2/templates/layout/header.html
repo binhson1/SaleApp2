@@ -1,0 +1,27 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="javascript:void(0)">SALE APP</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mynavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Trang Chủ</a>
+                </li>
+                {% for cate in categories %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/?category_id={{cate.id}}">{{ cate.name }}</a>
+                </li>
+                {% endfor %}
+                <li class="nav-item">
+                    <a class="nav-link text-success" href="/login">&#129313; Đăng nhập</a>
+                </li>
+            </ul>
+            <form class="d-flex" method="get" action="/">
+                <input class="form-control me-2" type="text" name="q" placeholder="Nhập từ khóa ...">
+                <button class="btn btn-primary" type="submit">Tìm</button>
+            </form>
+        </div>
+    </div>
+</nav>
