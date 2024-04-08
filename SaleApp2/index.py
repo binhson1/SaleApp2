@@ -1,10 +1,11 @@
 import math
 
 from flask import render_template, request, redirect
-from flask_login import login_user
-import dao
+from flask_login import login_user, logout_user, current_user
 from admin import admin
 from __init__ import app, login
+import dao
+import cloudinary.uploader
 
 
 @app.route('/')
@@ -35,27 +36,68 @@ def common_attributes():
 
 @app.route('/login', methods=['get', 'post'])
 def login_my_user():
+    if current_user.is_authenticated:
+        return redirect('/')
+    err_msg = ''
     if request.method.__eq__('POST'):
         username = request.form.get('username')
         password = request.form.get('password')
-        if username.__eq__('admin') and password.__eq__('123'):
+        u = dao.auth_user(username=username, password=password)
+        if u:
+            login_user(user=u)
             return redirect('/')
-    return render_template('login.html')
+        else:
+            err_msg = 'Username hoac password khong dung'
+    return render_template('login.html', err_msg=err_msg)
+
+
+@app.route('/logout', methods=['get'])
+def logout_my_user():
+    logout_user()
+    return redirect('/login')
 
 
 @app.route('/admin-login', methods=['post'])
 def process_admin_login():
+    err_msg=''
     username = request.form.get('username')
     password = request.form.get('password')
     u = dao.auth_user(username=username, password=password)
     if u:
-        login_user(user=u)
+        login_user(user=u)  # trang thai dang nhap session
+    else:
+        err_msg='Sai tai khoan hoac mat khau'
     return redirect('/admin')
 
 
 @login.user_loader
 def load_user(user_id):
     return dao.get_user_by_id(user_id)
+
+
+@app.route('/register', methods=['post', 'get'])
+def register():
+    err_msg = ''
+    if request.method.__eq__('POST'):
+        password = request.form.get('password')
+        confirm = request.form.get('confirm')
+        if password.__eq__(confirm):
+            avatar_path = None
+            avatar = request.files.get('avatar')
+            if avatar:
+                res = cloudinary.uploader.upload(avatar)
+                avatar_path = res['secure_url']
+            else:
+                err_msg = 'Hệ thống đang lỗi'
+            dao.register(name=request.form.get('name'),
+                         username=request.form.get('username'),
+                         password=password,
+                         avatar=avatar_path)
+
+            return redirect('/login')
+        else:
+            err_msg = "Mật khẩu không khớp"
+    return render_template('register.html', err_msg=err_msg)
 
 
 if __name__ == '__main__':

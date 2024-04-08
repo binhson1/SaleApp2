@@ -1,13 +1,18 @@
 from flask_admin import Admin, expose
 from __init__ import app, db
 from flask_admin.contrib.sqla import ModelView
-from models import Category, Product
+from models import Category, Product, UserRole
 from flask_admin import BaseView
 from flask_login import logout_user, current_user
 from flask import redirect
 
 
-class MyProductView(ModelView):
+class MyAuthenticatedView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
+
+
+class MyProductView(MyAuthenticatedView):
     column_list = ['id', 'name', 'category_id']
     column_searchable_list = ['id', 'name']
     column_filters = ['id', 'name', 'price']
@@ -17,15 +22,9 @@ class MyProductView(ModelView):
         'category_id': 'Danh mục sản phẩm'
     }
 
-    def is_accessible(self):
-        return current_user.is_authenticated
 
-
-class MyCategoryView(ModelView):
+class MyCategoryView(MyAuthenticatedView):
     column_list = ['id', 'name', 'products']
-
-    def is_accessible(self):
-        return current_user.is_authenticated
 
 
 class StatsView(BaseView):

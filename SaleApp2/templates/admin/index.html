@@ -2,7 +2,9 @@
 
 {% block body %}
 <h1 class="text-info">CHÀO MỪNG ĐÉN VỚI TRANG QUẢN TRỊ BÁN HÀNG</h1>
-
+{% if err_msg %}
+<div class="text-danger text-center">{{err_msg}}</div>
+{% endif %}
 {% if current_user.is_authenticated %}
 <h2 class="text-success">Chào mừng bạn <span>{{current_user.name}} đã quay trở lại</span></h2>
 {% else %}
