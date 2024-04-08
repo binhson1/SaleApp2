@@ -1,0 +1,25 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<h1 class="text-info">CHÀO MỪNG ĐÉN VỚI TRANG QUẢN TRỊ BÁN HÀNG</h1>
+
+{% if current_user.is_authenticated %}
+<h2 class="text-success">Chào mừng bạn <span>{{current_user.name}} đã quay trở lại</span></h2>
+{% else %}
+<form method="post" action="/admin-login">
+    <div class="form-group mb-3 mt-3">
+        <input type="text" class="form-control" id="username" placeholder="Nhập tài khoản" name="username"
+               pattern="[a-zA-Z0-9]*">
+        <label for="username">Tài Khoản</label>
+    </div>
+
+    <div class="form-group mt-3 mb-3">
+        <input type="password" class="form-control" id="password" placeholder="Nhập mật khẩu" name="password" required>
+        <label for="password">Mật Khẩu</label>
+    </div>
+    <div class="form-floating mt-3 mb-3">
+        <button class="btn btn-success">Đăng nhập</button>
+    </div>
+</form>
+{% endif %}
+{% endblock %}
