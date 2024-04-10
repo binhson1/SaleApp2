@@ -1,11 +1,12 @@
 import math
 
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect, session, jsonify
 from flask_login import login_user, logout_user, current_user
 from admin import admin
 from __init__ import app, login
-import dao
+import dao, utils
 import cloudinary.uploader
+from decorator import loggedin
 
 
 @app.route('/')
@@ -35,9 +36,8 @@ def common_attributes():
 
 
 @app.route('/login', methods=['get', 'post'])
+@loggedin
 def login_my_user():
-    if current_user.is_authenticated:
-        return redirect('/')
     err_msg = ''
     if request.method.__eq__('POST'):
         username = request.form.get('username')
@@ -59,14 +59,14 @@ def logout_my_user():
 
 @app.route('/admin-login', methods=['post'])
 def process_admin_login():
-    err_msg=''
+    err_msg = ''
     username = request.form.get('username')
     password = request.form.get('password')
     u = dao.auth_user(username=username, password=password)
     if u:
         login_user(user=u)  # trang thai dang nhap session
     else:
-        err_msg='Sai tai khoan hoac mat khau'
+        err_msg = 'Sai tai khoan hoac mat khau'
     return redirect('/admin')
 
 
@@ -75,7 +75,29 @@ def load_user(user_id):
     return dao.get_user_by_id(user_id)
 
 
+@app.route('/api/carts', methods=['post'])
+def add_to_cart():
+    cart = session.get('cart')
+    if not cart:
+        cart = {}
+
+    id = str(request.json.get('id'))
+    if id in cart:
+        cart[id]['quantity'] += 1
+    else:
+        cart[id] = {
+            "id": id,
+            "name": request.json.get('name'),
+            "price": request.json.get('price'),
+            "quantity": 1
+        }
+    session['cart'] = cart
+
+    return jsonify(utils.count_cart(cart))
+
+
 @app.route('/register', methods=['post', 'get'])
+@loggedin
 def register():
     err_msg = ''
     if request.method.__eq__('POST'):
